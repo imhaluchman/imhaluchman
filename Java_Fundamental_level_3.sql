@@ -56,13 +56,94 @@ CREATE TABLE Karyawan_Training (
 
 -- 1. Insert Karyawan
 
-INSERT INTO karyawan(
+create or replace procedure  Savekaryawan(INOUT in_id int,
+inout in_id_karyawan varchar,
+INOUT in_nama varchar,
+INOUT in_jenis_kelamin varchar,
+INOUT in_date_of_birth date,
+INOUT in_alamat text,
+INOUT in_status varchar,
+INOUT in_nik varchar,
+INOUT in_npwp varchar,
+INOUT eror_desc varchar,
+INOUT eror_code integer)
+language plpgsql
+as
+$insert_karyawan$
+BEGIN
+
+if in_id is null then
+eror_code = 404;
+eror_desc = 'ID Kosong';
+return;
+
+elsif in_id_karyawan is null then
+eror_code = 404;
+eror_desc = 'ID Karyawan Kosong';
+
+elsif in_nama is null then
+eror_code = 404;
+eror_desc = 'Nama Kosong';
+return;
+
+elsif in_jenis_kelamin is null then
+eror_code = 404;
+eror_desc = 'Jenis Kosong';
+return;
+
+elsif in_date_of_birth is null then
+eror_code = 404;
+eror_desc = 'Nomor Kosong';
+return;
+
+elsif in_alamat is null then
+eror_code = 404;
+eror_desc = 'Alamat Kosong';
+return;
+
+elsif in_status is null then
+eror_code = 404;
+eror_desc = 'Status Kosong';
+return;
+
+elsif in_nik is null then
+eror_code = 404;
+eror_desc = 'ID Kosong';
+return;
+
+elsif in_npwp is null then
+eror_code = 404;
+eror_desc = 'ID Kosong';
+return;
+
+else
+    INSERT INTO karyawan(
 	id, nama, jenis_kelamin, date_of_birth, status, alamat)
-	VALUES (1, 'Budi', 'Laki-laki', '01/01/1999', 'single', 'jalan-jalan')
-;
-INSERT INTO detail_karyawan(
+	VALUES (in_id, in_nama, in_jenis_kelamin, in_date_of_birth, in_status, in_alamat);
+
+    INSERT INTO detail_karyawan(
 	id, id_karyawan, nik, npwp)
-	VALUES (1, '0001', '0001', '5555')
+	VALUES (in_id, in_id_karyawan, in_nik, in_npwp);
+
+    eror_code = 200;
+    eror_desc = 'sukses';
+commit;
+end if;
+end;
+
+$insert_karyawan$;
+
+call Savekaryawan(19,
+    '019'::varchar,
+    'Turner2'::varchar,
+    'laki-laki'::varchar,
+    '1999-10-10'::date,
+    'jalan-jalan'::text,
+    'status_karyawan'::varchar,
+    '36005'::varchar,
+    '324444'::varchar,
+    null,
+    null);
 ;
 
 UPDATE detail_karyawan
@@ -70,7 +151,109 @@ UPDATE detail_karyawan
 	WHERE id=1
 ;
 
+select a.* ,
+       b.*
+from Karyawan as a,
+     Detail_Karyawan as b
+where a.id = b.id;
+
 -- 2. Update Karyawan
+
+create or replace procedure updatekaryawan (INOUT in_id int,
+inout in_id_karyawan varchar,
+INOUT in_nama varchar,
+INOUT in_jenis_kelamin varchar,
+INOUT in_date_of_birth date,
+INOUT in_alamat text,
+INOUT in_status varchar,
+INOUT in_nik varchar,
+INOUT in_npwp varchar,
+INOUT eror_desc varchar,
+INOUT eror_code integer
+)
+language plpgsql
+as $update_karyawan$
+BEGIN
+
+if in_id is null then
+eror_code = 404;
+eror_desc = 'ID Kosong';
+return;
+
+elsif in_id_karyawan is null then
+eror_code = 404;
+eror_desc = 'ID Karyawan Kosong';
+
+
+elsif in_nama is null then
+eror_code = 404;
+eror_desc = 'Nama Kosong';
+return;
+
+elsif in_jenis_kelamin is null then
+eror_code = 404;
+eror_desc = 'Jenis Kosong';
+return;
+
+elsif in_date_of_birth is null then
+eror_code = 404;
+eror_desc = 'Nomor Kosong';
+return;
+
+elsif in_alamat is null then
+eror_code = 404;
+eror_desc = 'Alamat Kosong';
+return;
+
+elsif in_status is null then
+eror_code = 404;
+eror_desc = 'Status Kosong';
+return;
+
+elsif in_nik is null then
+eror_code = 404;
+eror_desc = 'ID Kosong';
+return;
+
+elsif in_npwp is null then
+eror_code = 404;
+eror_desc = 'ID Kosong';
+return;
+
+else
+    UPDATE Karyawan
+	SET nama=in_nama,
+	    jenis_kelamin=in_jenis_kelamin,
+	    status=in_status,
+	    alamat=in_alamat,
+	    date_of_birth=in_date_of_birth
+	WHERE id=in_id;
+
+    update Detail_Karyawan
+    set id_karyawan=in_id_karyawan,
+        nik=in_nik,
+        npwp=in_npwp
+    where id=in_id;
+    eror_code = 200;
+    eror_desc = 'sukses';
+    commit;
+
+end if;
+end;
+
+$update_karyawan$;
+call updatekaryawan(19,
+    '019'::varchar,
+    'Turner new'::varchar,
+    'laki-laki'::varchar,
+    '1999-10-10'::date,
+    'jalan-jalan baru'::text,
+    'status_karyawan'::varchar,
+    '36005'::varchar,
+    '324444'::varchar,
+    null,
+    null);
+;
 
 
 UPDATE Karyawan
@@ -80,47 +263,56 @@ UPDATE Karyawan
 
 -- 3. List Karyawan by Nama
 
-create or replace function getListKaryawann (IN var_nama Varchar)
-returns varchar
+create or replace function getListKaryawann (IN in_nama Varchar)
+returns table  (
+    id int  ,
+	nama varchar,
+	jenis_kelamin varchar,
+	date_of_birth DATE,
+	status Varchar,
+	alamat text
+    )
 
 language plpgsql
 as
 $$
-declare
-    nama_selected varchar;
 begin
-    select nama
-      into nama_selected
-      from Karyawan
-     where Karyawan.nama ilike var_nama;
 
-return nama_selected;
+return query
+    select *
+      from Karyawan
+     where Karyawan.nama ilike in_nama;
+
 end;
 $$;
-
+drop function if exists getListKaryawann(in_nama Varchar);
 select getListKaryawann('Budiarta');
 ;
 
 -- 4. Get Karyawan by ID
 
-create or replace function getKaryawan(IN var_ID bigint)
-returns varchar
+create or replace function getKaryawan(IN var_ID int)
+returns table  (
+    id int  ,
+	nama varchar,
+	jenis_kelamin varchar,
+	date_of_birth DATE,
+	status Varchar,
+	alamat text
+    )
 
 language plpgsql
 as
 $$
-DECLARE
-    nama_selected varchar;
 begin
-    select nama
-      into nama_selected
+    return query
+    select *
       from Karyawan
      where Karyawan.id = var_ID;
 
-return nama_selected;
 end;
 $$;
-
+drop function if exists  getkaryawan(var_id int);
 select getKaryawan(1);
 
 -- 5. Insert Training
@@ -230,17 +422,30 @@ call SaveTrainingKaryawan( 3,'0002'::character varying, '1'::character varying, 
 
 --10. Delete Training Karyawan
 
-create or replace procedure deleteTrainingKaryawan (in_id int)
+create or replace procedure deleteTrainingKaryawan (inout in_id int,
+inout eror_desc varchar,
+inout eror_code int )
 language plpgsql
 as $delete$
 BEGIN
+if in_id is null then
+
+        eror_code=404,
+        eror_desc='id_is null';
+
+    else
+
     delete from Karyawan_Training where id=in_id;
     commit;
+    eror_code=200,
+    eror_desc='sukses';
+end if;
+
 END;
 
 $delete$;
 
-call deleteTrainingKaryawan(1);
+call deleteTrainingKaryawan(1,null,null);
 
 --11. Simpan Rekening
 create or replace procedure saveRekening(
@@ -279,7 +484,7 @@ return;
 
 elsif in_id_karyawan is null then
 eror_code = 404;
-eror_desc = 'Nomor Kosong';
+eror_desc = 'ID Kosong';
 return;
 
 else
@@ -318,22 +523,34 @@ call updateRekening(3, 'Beby', 'CBA', '500000', '002');
 
 --13. Delete Rekening + Soft Delete(Mengisi deleted_date )
 
-create or replace procedure deleteRekening (in_id int)
+create or replace procedure deleteRekening (in_id int,
+INOUT eror_desc varchar,
+INOUT eror_code integer
+)
 language plpgsql
 as $delete$
 BEGIN
+    if in_id is null then
+        eror_code=404,
+        eror_desc='id_is null';
+
+    else
     delete from Rekening where id=in_id;
 
     INSERT
       INTO rekening(id,deleted_date)
-	VALUES (1,current_timestamp)
-;
+	VALUES (1,current_timestamp);
+
     commit;
+    eror_code=200,
+    eror_desc='sukses';
+    end if;
+
 
 END;
 $delete$;
 
-call deleteRekening(1);
+call deleteRekening(1,null,null);
 
 --
 --
@@ -341,6 +558,14 @@ call deleteRekening(1);
 --
 ---- EXTRA -----
 commit;
+
+INSERT INTO karyawan(
+	id, nama, jenis_kelamin, date_of_birth, status, alamat)
+	VALUES (1, 'Budi', 'Laki-laki', '01/01/1999', 'single', 'jalan-jalan')
+;
+INSERT INTO detail_karyawan(
+	id, id_karyawan, nik, npwp)
+	VALUES (1, '0001', '0001', '5555')
 
 select * from Karyawan;
 select * from Detail_Karyawan;
@@ -424,3 +649,7 @@ update training
    set tema ='PostgreSQL', nama_pengajar='Alex'
  where id = 1;
 ;
+
+
+
+
