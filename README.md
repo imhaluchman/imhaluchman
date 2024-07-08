@@ -1,6 +1,5 @@
-# Hi there, I'm Lubi - aka [ccprogrammer][github] 🙏 
-What is ccprogrammer? it means **cita-cita programmer** in bahasa Indonesia and in english it's **Dreaming to be a Programmer**.
-
+# Hi there, I'm Imha - aka [futile][github] 🙏 
+//ini bio
 
 <br />
 
